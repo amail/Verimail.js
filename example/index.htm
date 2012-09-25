@@ -1,0 +1,72 @@
+
+<!DOCTYPE html>
+<!--[if lt IE 7 ]><html class="ie ie6" lang="en"> <![endif]-->
+<!--[if IE 7 ]><html class="ie ie7" lang="en"> <![endif]-->
+<!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!--><html class="not-ie" lang="en"> <!--<![endif]-->
+	<head>
+		<meta charset="utf-8">
+		<title>Verimail.js - Email Verfification</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link href="css/style.css" rel="stylesheet">
+		<link href="css/font-awesome/font-awesome.css" rel="stylesheet">
+		<!--[if IE 7]>
+			<link href="css/font-awesome/font-awesome-ie7.css" rel="stylesheet">
+		<![endif]-->
+
+		<!-- Load Open sans from Google Font Directory -->
+		<link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800' rel='stylesheet' type='text/css'>
+
+		<!--[if lt IE 9]>
+			<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+
+		<script src="../verimail.js"></script>
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+
+		<style type="text/css">
+			span.success {
+				color: green;
+				font-weight: bold;
+			}
+			span.error {
+				color: red;
+			}
+		</style>
+
+		<script>
+			var verimail = new Comfirm.AlphaMail.Verimail("15469766-0a74-4dc9-b93c-ba94430896a2");
+			$(document).ready(function(){
+				$("input#email-address").keyup(function(e){
+					var email = $(this).val();
+					verimail.verify(email, function(type, message, suggestion){
+						if(suggestion){
+							$("#email-validation-details").html("Did you mean <strong class='email-suggestion'><a href='#'>" + suggestion + "</a></strong>?");
+						}else{
+							$("#email-validation-details").html("<span class='success'>Email seems OK</span>");
+						}
+					}, function(type, message){
+						$("#email-validation-details").html("<span class='error'>" + message + "</span>");
+					});
+				});
+			});
+		</script>
+	</head>
+	<body>
+		<div id="content" class="container">
+			<div class="hero-unit">
+				<div>
+					<h1 class="ac" style="margin-bottom: 30px;">Verimail.js</h1>
+					<p class="ac">
+						<input id="email-address" type="text" style="height: 1.5em; font-size: 1.5em;width: 350px;text-align: center;line-height: 1.1em;" placeholder="Enter an email address" />
+					</p>
+					<p class="ac" id="email-validation-details"></p>
+				</div>
+			</div>
+
+		<script type="text/javascript" src="js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="js/jquery.isotope.min.js"></script>
+		<script type="text/javascript" src="js/functions.min.js"></script>
+	</body>
+</html>
