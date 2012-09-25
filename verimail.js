@@ -38,7 +38,7 @@ var Verimail = Comfirm.AlphaMail.Verimail = function(options){
 	    }
 	}
 
- 	// Tempoary..
+ 	// Temporary..
 	this.Service = {};
 	this.Service.verify = function(email, onSuccess, onError){
 		onSuccess();
