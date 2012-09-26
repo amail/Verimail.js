@@ -33,21 +33,40 @@
 			span.error {
 				color: red;
 			}
+			a.suggestion {
+				font-weight: bold;
+			}
 		</style>
 
 		<script>
-			var verimail = new Comfirm.AlphaMail.Verimail("15469766-0a74-4dc9-b93c-ba94430896a2");
+			/*
+			TO BE OR NOT TO BE - A JQUERY PLUGIN
+			$("input#email-address").verimail({
+				token: "15469766-0a74-4dc9-b93c-ba94430896a2",
+				message: "p#email-validation-details"
+			});*/
+
+			var emailVerifier = new Comfirm.AlphaMail.Verimail({
+				token: "15469766-0a74-4dc9-b93c-ba94430896a2"
+			});
+
 			$(document).ready(function(){
 				$("input#email-address").keyup(function(e){
 					var email = $(this).val();
-					verimail.verify(email, function(type, message, suggestion){
-						if(suggestion){
-							$("#email-validation-details").html("Did you mean <strong class='email-suggestion'><a href='#'>" + suggestion + "</a></strong>?");
+					emailVerifier.verify(email, function(status, message, suggestion){
+						var formattedMessage;
+
+						if(status < 0){
+							formattedMessage = "<span class='error'>" + message + "</span>";
 						}else{
-							$("#email-validation-details").html("<span class='success'>Email seems OK</span>");
+							if(suggestion){
+								formattedMessage = "Did you mean <a href='#' class='suggestion'>" + suggestion + "</a>?";
+							}else{
+								formattedMessage = "<span class='success'>Email seems OK</span>";
+							}
 						}
-					}, function(type, message){
-						$("#email-validation-details").html("<span class='error'>" + message + "</span>");
+
+						$("#email-validation-details").html(formattedMessage);
 					});
 				});
 			});

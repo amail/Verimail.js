@@ -26,9 +26,16 @@ Comfirm.AlphaMail = Comfirm.AlphaMail || {};
 var Verimail = Comfirm.AlphaMail.Verimail = function(options){
 	// Set default options
 	this.options = {
+		// Service url
+		url: "http://jsapi.comfirm.se/verify/v1/",
+		// Authentication token.. Leave it out if your 
 		token: null,
 		// Fore emails to require a valid TLD
-		enforceTld: true
+		enforceTld: true,
+		// Deny users from using a temp email domain (e.g. mailinator.com)
+		denyTempEmailDomains: false,
+		// Language to use (currently supported, [en, sv])
+		language: 'en'
 	};
 
  	// Copy over existing options
@@ -38,11 +45,47 @@ var Verimail = Comfirm.AlphaMail.Verimail = function(options){
 	    }
 	}
 
+	// Set the language, default to english if non-existing
+	this.setLanguage(this.options.language, 'en');
+
  	// Temporary..
 	this.Service = {};
-	this.Service.verify = function(email, onSuccess, onError){
-		onSuccess();
+	this.Service.verify = function(email, onStatusUpdate){
+		//setTimeout(1000 * 3, function(){
+			onStatusUpdate(Verimail.Status.Success, "It looks OK!");
+		//});	
 	};
+};
+
+// Email status codes
+Verimail.Status = {
+	// Email is ok!
+	Success: 0,
+	Pending: 1,
+	EmptyError: -1,
+	FormatError: -2,
+	SyntaxError: -3,
+	BlockedError: -4
+};
+
+// Localization
+Verimail.Language = {
+	en: {
+		success: "Email looks OK",
+		typo: "Did you mean %s?",
+		invalidTld: "Top level domain %s does not exist",
+		domainBlocked: "Domain %s is not allowed",
+		invalidFormat: "Email is not correctly formatted",
+		empty: "Email is empty"
+	},
+	sv: {
+		success: "E-postadressen är godkänd",
+		typo: "Menade du %s?",
+		invalidTld: "Toppdomänen %s existerar inte",
+		domainBlocked: "Domänen %s är inte tillåten",
+		invalidFormat: "Ogiltig e-postadress",
+		empty: "E-postadressen är tom"
+	}
 };
 
 // Table of the most common email domains
@@ -90,6 +133,41 @@ Verimail.IANARegisteredTlds = { ac:null, ad:null, ae:null, aero:null, af:null, a
 	tj:null, tk:null, tl:null, tm:null, tn:null, to:null, tp:null, tr:null, travel:null, tt:null, tv:null,
 	tw:null, tz:null, ua:null, ug:null, uk:null, us:null, uy:null, uz:null, va:null, vc:null, ve:null,
 	vg:null, vi:null, vn:null, vu:null, wf:null, ws:null, ye:null, yt:null, za:null, zm:null, zw: null
+};
+
+// Lookup table for the most common temp email domains
+// Mostly from http://www.sizlopedia.com/2007/05/27/top-20-temporary-and-disposable-email-services/
+Verimail.TempEmailDomains = {
+	com: {
+		mytrashmail: null,
+		mailmetrash: null,
+		trashymail: null,
+		mailinator: null,
+		mailexpire: null,
+		temporaryinbox: null,
+		rtrtr: null,
+		sharklasers: null,
+		guerrillamailblock: null,
+		guerrillamail: null
+	},
+	net: {
+		guerrillamail: null,
+		tempemail: null
+	},
+	org: {
+		guerrillamail: null,
+		spamfree24: null,
+		jetable: null
+	},
+	fr: {
+		tempomail: null
+	},
+	de: {
+		guerrillamail: null
+	},
+	biz: {
+		guerrillamail: null
+	}
 };
 
 // Levenshtein distance algorithm
@@ -159,6 +237,14 @@ Verimail.testEmailFormat = function(email){
 	return /^([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22))*\x40([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d))*$/.test(email);
 };
 
+Verimail.prototype.setLanguage = function(code, fallback){
+	this.options.language = (code && code in Verimail.Language) ? code : fallback;
+};
+
+Verimail.prototype.getLanguageText = function(key){
+	return Verimail.Language[this.options.language][key];
+};
+
 // Parse an email address into segments (local, domain, tld)
 Verimail.getEmailAddressSegments = function(email){
 	var state = 'local';
@@ -192,51 +278,69 @@ Verimail.getEmailAddressSegments = function(email){
 		}
 	}
 
+	segments.fullDomain = segments.domain + "." + segments.tld;
+
 	return segments;
 };
 
-Verimail.prototype.verify = function(email, onSuccess, onError){
+Verimail.prototype.verify = function(email, onStatusUpdate){
 	email = (email || "").toLowerCase();
+	var status = null, message = null, suggestion = null;
 	
 	// Check if the email is empty.. White space doesn't fool us!
 	if(!email || email.length == 0 || (email.replace && email.replace(/(?:(?:^|\n)\s+|\s+(?:$|\n))/g,'').replace(/\s+/g,' ').length == 0)){
-		onError("empty", "Email is empty");
+		status = Verimail.Status.EmptyError;
+		message = this.getLanguageText("empty");
 	// Validate the format of the email
 	}else if(!Verimail.testEmailFormat(email)){
-		onError("syntax", "Email is not correctly formatted");
+		status = Verimail.Status.SyntaxError;
+		message = this.getLanguageText("invalidFormat");
 	}else{
-		tldProcessed = false;
 		var segments = Verimail.getEmailAddressSegments(email);
 
-		if(this.options.enforceTld){
-			if(!segments.tld){
-				tldProcessed = true;
-				onError("syntax", "Email is not correctly formatted");
-			}else if(!(segments.tld in Verimail.IANARegisteredTlds)){
-				tldProcessed = true;
-				var closestTld = Verimail.getClosestTld(segments.tld, 10);
-				if(closestTld){
-					var closestDomain = Verimail.getClosestEmailDomain(segments.domain + "." + closestTld, 0.25);
-					if(closestDomain){
-						var suggestion = segments.local + "@" + closestDomain;
-						onSuccess("typo", "Did you mean " + suggestion + "?", suggestion);
+		if(segments.tld in Verimail.TempEmailDomains && segments.domain in Verimail.TempEmailDomains[segments.tld]){
+			status = Verimail.Status.BlockedError;
+			message = this.getLanguageText("domainBlocked").replace("%s", segments.fullDomain);
+		}else{
+			if(this.options.enforceTld){
+				if(!segments.tld){
+					status = Verimail.Status.SyntaxError;
+					message = this.getLanguageText("invalidFormat");
+				}else if(!(segments.tld in Verimail.IANARegisteredTlds)){
+					var closestTld = Verimail.getClosestTld(segments.tld, 10);
+					if(closestTld){
+						var closestDomain = Verimail.getClosestEmailDomain(segments.domain + "." + closestTld, 0.25);
+						if(closestDomain){
+							status = Verimail.Status.Success;
+							suggestion = segments.local + "@" + closestDomain;
+							message = this.getLanguageText("typo").replace("%s", suggestion);
+						}else{
+							status = Verimail.Status.Success;
+							suggestion = segments.local + "@" + segments.domain + "." + closestTld;
+							message = this.getLanguageText("typo").replace("%s", suggestion);
+						}
 					}else{
-						onError("typo", "Did you mean " + segments.local + "@" + segments.domain + "." + closestTld + "?");
+						status = Verimail.Status.SyntaxError;
+						message = this.getLanguageText("invalidTld").replace("%s", segments.tld);
 					}
-				}else{
-					onError("syntax", "Top level domain " + segments.tld + " does not exist");
 				}
 			}
 		}
+	}
 
-		if(!tldProcessed){
-			var closestDomain = Verimail.getClosestEmailDomain(segments.domain + "." + segments.tld, 0.25);
-			if(closestDomain){
-				var suggestion = segments.local + "@" + closestDomain;
-				onSuccess("typo", "Did you mean " + suggestion + "?", suggestion);
-			}else{
-				this.Service.verify(email, onSuccess, onError);
-			}
+	if(status === null){
+		var closestDomain = Verimail.getClosestEmailDomain(segments.domain + "." + segments.tld, 0.25);
+		if(closestDomain){
+			status = Verimail.Status.Success;
+			suggestion = segments.local + "@" + closestDomain;
+			message = this.getLanguageText("typo").replace("%s", suggestion);
 		}
 	}
+
+	/*if(this.options.token && status == Verimail.Status.Success){
+		onStatusUpdate(Verimail.Status.Pending, message, suggestion);
+		this.Service.verify(email, onStatusUpdate);
+	}else{*/
+	onStatusUpdate(status, message, suggestion);
+	/*}*/
 };
