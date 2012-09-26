@@ -1,12 +1,14 @@
 Verimail.js
 ======================
 
-Simply a kit for validating/verifying e-mails through javascript. Can prevent many common typos. Currently support:
+Simply a kit for validating/verifying e-mails through javascript. Can prevent many common typos.
 
-    * Syntax validation
+Current support:
+
+    * Syntax validation (according to RFC 822)
     * IANA TLD validation
-    * Most common e-mail domains
-    * Most common TLDs
+    * Text correction for the most common TLDs and email domains
+    * Deny temporary email account domains such as mailinator.com
 
 E.g. validating 'cool@fabeook.cmo' will result in a typo suggestion:
 
