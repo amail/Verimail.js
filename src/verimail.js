@@ -35,7 +35,11 @@ var Verimail = Comfirm.AlphaMail.Verimail = function(options){
 		// Deny users from using a temp email domain (e.g. mailinator.com)
 		denyTempEmailDomains: false,
 		// Language to use (currently supported, [en, sv])
-		language: 'en'
+		language: 'en',
+		// Determines whether or not messages are in HTML or just Plain Text
+		richTextMessages: true,
+		// Distance function (leave empty for default: levenshtein)
+		distanceFunction: null
 	};
 
  	// Copy over existing options
@@ -59,12 +63,17 @@ var Verimail = Comfirm.AlphaMail.Verimail = function(options){
 
 // Email status codes
 Verimail.Status = {
-	// Email is ok!
+	// The email is fine. It's OK to submit the form!
 	Success: 0,
+	// Waiting for an external service to resolve the status of the email.
 	Pending: 1,
+	// The email is empty.
 	EmptyError: -1,
-	FormatError: -2,
-	SyntaxError: -3,
+	// The email is incorrectly formatted.
+	SyntaxError: -2,
+	// The email format is OK, but a part of the syntax is wrong.
+	InvalidPart: -3,
+	// The email domain is blocked.
 	BlockedError: -4
 };
 
@@ -237,12 +246,28 @@ Verimail.testEmailFormat = function(email){
 	return /^([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22))*\x40([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d))*$/.test(email);
 };
 
+// Sets the language that the messages will be generated in
 Verimail.prototype.setLanguage = function(code, fallback){
 	this.options.language = (code && code in Verimail.Language) ? code : fallback;
 };
 
-Verimail.prototype.getLanguageText = function(key){
-	return Verimail.Language[this.options.language][key];
+// Retrieves a language text by key. Either as rich text (HTML) or plain
+Verimail.prototype.getLanguageText = function(key, arg1){
+	var text = Verimail.Language[this.options.language][key];
+
+	// Simple formatting
+	if(arg1){
+		text = text.replace("%s", arg1);
+	}
+
+	// Turn formatted text into HTML
+	if(!this.options.richTextMessages && text.indexOf('<') != -1){
+		var temp = document.createElement("DIV");
+		temp.innerHTML = text;
+		text = temp.textContent || temp.innerText;
+	}
+
+	return text;
 };
 
 // Parse an email address into segments (local, domain, tld)
@@ -283,9 +308,15 @@ Verimail.getEmailAddressSegments = function(email){
 	return segments;
 };
 
+// Verifies an email and calls a callback function once it's ready
 Verimail.prototype.verify = function(email, onStatusUpdate){
 	email = (email || "").toLowerCase();
 	var status = null, message = null, suggestion = null;
+
+	// Helper method that wraps a text in a span/correction element
+	var markAsCorrection = function(text){
+		return "<span class='correction'>" + text + "</span>";
+	};
 	
 	// Check if the email is empty.. White space doesn't fool us!
 	if(!email || email.length == 0 || (email.replace && email.replace(/(?:(?:^|\n)\s+|\s+(?:$|\n))/g,'').replace(/\s+/g,' ').length == 0)){
@@ -300,41 +331,41 @@ Verimail.prototype.verify = function(email, onStatusUpdate){
 
 		if(segments.tld in Verimail.TempEmailDomains && segments.domain in Verimail.TempEmailDomains[segments.tld]){
 			status = Verimail.Status.BlockedError;
-			message = this.getLanguageText("domainBlocked").replace("%s", segments.fullDomain);
+			message = this.getLanguageText("domainBlocked", segments.fullDomain);
 		}else{
 			if(this.options.enforceTld){
 				if(!segments.tld){
-					status = Verimail.Status.SyntaxError;
+					status = Verimail.Status.InvalidPart;
 					message = this.getLanguageText("invalidFormat");
 				}else if(!(segments.tld in Verimail.IANARegisteredTlds)){
-					status = Verimail.Status.SyntaxError;
-					var closestTld = Verimail.getClosestTld(segments.tld, 10);
+					status = Verimail.Status.InvalidPart;
+					var closestTld = Verimail.getClosestTld(segments.tld, 10, this.options.distanceFunction);
 					if(closestTld){
-						var closestDomain = Verimail.getClosestEmailDomain(segments.domain + "." + closestTld, 0.25);
+						var closestDomain = Verimail.getClosestEmailDomain(segments.domain + "." + closestTld, 0.25, this.options.distanceFunction);
 						if(closestDomain){
 							suggestion = segments.local + "@" + closestDomain;
-							message = this.getLanguageText("typo").replace("%s", suggestion);
+							message = this.getLanguageText("typo", segments.local + "@" + markAsCorrection(closestDomain));
 						}else{
 							suggestion = segments.local + "@" + segments.domain + "." + closestTld;
-							message = this.getLanguageText("typo").replace("%s", suggestion);
+							message = this.getLanguageText("typo", segments.local + "@" + segments.domain + "." + markAsCorrection(closestTld));
 						}
 					}else{
-						message = this.getLanguageText("invalidTld").replace("%s", segments.tld);
+						message = this.getLanguageText("invalidTld", segments.tld);
 					}
 				}
 			}
 		}
 	}
 
-	if(status === null){
-		var closestDomain = Verimail.getClosestEmailDomain(segments.domain + "." + segments.tld, 0.25);
+	if(status === null || status == Verimail.SyntaxError){
+		var closestDomain = Verimail.getClosestEmailDomain(segments.domain + "." + segments.tld, 0.3, this.options.distanceFunction);
 		if(closestDomain){
 			status = Verimail.Status.Success;
 			suggestion = segments.local + "@" + closestDomain;
-			message = this.getLanguageText("typo").replace("%s", suggestion);
+			message = this.getLanguageText("typo", segments.local + "@" + markAsCorrection(closestDomain));
 		}else{
             status = Verimail.Status.Success;
-            message = this.getLanguageText("success");
+            message = message || this.getLanguageText("success");
         }
 	}
 
