@@ -14,7 +14,7 @@ E.g. validating 'cool@fabeook.cmo' will result in a typo suggestion:
 
     Did you mean cool@facebook.com?
 
-### Code
+### Example
 
 	var email = "cool@fabeook.cmo";
 	var verimail = new Comfirm.AlphaMail.Verimail();
