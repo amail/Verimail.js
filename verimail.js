@@ -72,17 +72,17 @@ Verimail.Status = {
 Verimail.Language = {
 	en: {
 		success: "Email looks OK",
-		typo: "Did you mean %s?",
-		invalidTld: "Top level domain %s does not exist",
-		domainBlocked: "Domain %s is not allowed",
+		typo: "Did you mean <span class='suggestion'>%s</span>?",
+		invalidTld: "Top level domain <span class='tld'>%s</span> does not exist",
+		domainBlocked: "Domain <span class='blocked'>%s</span> is not allowed",
 		invalidFormat: "Email is not correctly formatted",
 		empty: "Email is empty"
 	},
 	sv: {
 		success: "E-postadressen är godkänd",
-		typo: "Menade du %s?",
-		invalidTld: "Toppdomänen %s existerar inte",
-		domainBlocked: "Domänen %s är inte tillåten",
+		typo: "Menade du <span class='suggestion'>%s</span>?",
+		invalidTld: "Toppdomänen <span class='tld'>%s</span> existerar inte",
+		domainBlocked: "Domänen <span class='domain'>%s</span> är inte tillåten",
 		invalidFormat: "Ogiltig e-postadress",
 		empty: "E-postadressen är tom"
 	}
@@ -307,20 +307,18 @@ Verimail.prototype.verify = function(email, onStatusUpdate){
 					status = Verimail.Status.SyntaxError;
 					message = this.getLanguageText("invalidFormat");
 				}else if(!(segments.tld in Verimail.IANARegisteredTlds)){
+					status = Verimail.Status.SyntaxError;
 					var closestTld = Verimail.getClosestTld(segments.tld, 10);
 					if(closestTld){
 						var closestDomain = Verimail.getClosestEmailDomain(segments.domain + "." + closestTld, 0.25);
 						if(closestDomain){
-							status = Verimail.Status.Success;
 							suggestion = segments.local + "@" + closestDomain;
 							message = this.getLanguageText("typo").replace("%s", suggestion);
 						}else{
-							status = Verimail.Status.Success;
 							suggestion = segments.local + "@" + segments.domain + "." + closestTld;
 							message = this.getLanguageText("typo").replace("%s", suggestion);
 						}
 					}else{
-						status = Verimail.Status.SyntaxError;
 						message = this.getLanguageText("invalidTld").replace("%s", segments.tld);
 					}
 				}
@@ -334,7 +332,10 @@ Verimail.prototype.verify = function(email, onStatusUpdate){
 			status = Verimail.Status.Success;
 			suggestion = segments.local + "@" + closestDomain;
 			message = this.getLanguageText("typo").replace("%s", suggestion);
-		}
+		}else{
+            status = Verimail.Status.Success;
+            message = this.getLanguageText("success");
+        }
 	}
 
 	/*if(this.options.token && status == Verimail.Status.Success){
