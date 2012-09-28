@@ -35,5 +35,8 @@ E.g. validating 'cool@fabeook.cmo' will result in a typo suggestion:
 		}
 	});
 
-Check out the rest of our stuff at:
+
+Like it? Then maybe you'll like our amazing Transactional Email service.
+
+Try AlphaMail for free at:
 http://www.comfirm.se/
