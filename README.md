@@ -29,7 +29,7 @@ E.g. validating 'cool@fabeook.cmo' will result in a typo suggestion:
 		}else{
 			// Syntax looks great!
 			if(suggestion){
-				// But we're guessing that you've mispelled something here
+				// But we're guessing that you misspelled something
 				console.log("Did you mean " + suggestion + "?");
 			}
 		}
