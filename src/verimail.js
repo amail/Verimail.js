@@ -57,7 +57,7 @@ var Verimail = Comfirm.AlphaMail.Verimail = function(options){
     this.Service.verify = function(email, onStatusUpdate){
         //setTimeout(1000 * 3, function(){
             onStatusUpdate(Verimail.Status.CorrectSyntax, "It looks OK!");
-        //});   
+        //});
     };
 };
 
@@ -135,11 +135,11 @@ Verimail.IANARegisteredTlds = { ac:null, ad:null, ae:null, aero:null, af:null, a
     biz:null, bj:null, bm:null, bn:null, bo:null, br:null, bs:null, bt:null, bv:null, bw:null, by:null,
     bz:null, ca:null, cat:null, cc:null, cd:null, cf:null, cg:null, ch:null, ci:null, ck:null, cl:null,
     cm:null, cn:null, co:null, com:null, coop:null, cr:null, cu:null, cv:null, cw:null, cx:null, cy:null,
-    cz:null, de:null, dj:null, dk:null, dm:null, do:null, dz:null, ec:null, edu:null, ee:null, eg:null,
+    cz:null, de:null, dj:null, dk:null, dm:null, 'do':null, dz:null, ec:null, edu:null, ee:null, eg:null,
     er:null, es:null, et:null, eu:null, fi:null, fj:null, fk:null, fm:null, fo:null, fr:null, ga:null,
     gb:null, gd:null, ge:null, gf:null, gg:null, gh:null, gi:null, gl:null, gm:null, gn:null, gov:null,
     gp:null, gq:null, gr:null, gs:null, gt:null, gu:null, gw:null, gy:null, hk:null, hm:null, hn:null,
-    hr:null, ht:null, hu:null, id:null, ie:null, il:null, im:null, in:null, info:null, int:null, io:null,
+    hr:null, ht:null, hu:null, id:null, ie:null, il:null, im:null, 'in':null, info:null, int:null, io:null,
     iq:null, ir:null, is:null, it:null, je:null, jm:null, jo:null, jobs:null, jp:null, ke:null, kg:null,
     kh:null, ki:null, km:null, kn:null, kp:null, kr:null, kw:null, ky:null, kz:null, la:null, lb:null,
     lc:null, li:null, lk:null, lr:null, ls:null, lt:null, lu:null, lv:null, ly:null, ma:null, mc:null,
@@ -300,7 +300,7 @@ Verimail.getEmailAddressSegments = function(email){
     var segments = {local:"", domain:"", tld:""};
 
     for(var i=0;i<email.length;++i){
-        var character = email[i];
+        var character = email.charAt(i);
         switch(state){
             case 'local':
                 if(character == '@'){
@@ -341,7 +341,7 @@ Verimail.prototype.verify = function(email, onStatusUpdate){
     var markAsCorrection = function(text){
         return "<span class='correction'>" + text + "</span>";
     };
-    
+
     // Check if the email is empty.. White space doesn't fool us!
     if(!email || email.length == 0 || (email.replace && email.replace(/(?:(?:^|\n)\s+|\s+(?:$|\n))/g,'').replace(/\s+/g,' ').length == 0)){
         status = Verimail.Status.EmptyError;
