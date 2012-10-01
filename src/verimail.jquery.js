@@ -437,6 +437,8 @@ Verimail.prototype.verify = function(email, onStatusUpdate){
                         .removeClass(config.prefixName + '-pending')
                         .addClass(config.prefixName + '-' + statusClass);
 
+                    outerScope.$element.data('verimail-status', statusClass);
+
                     if(config.messageElement){
                         $(config.messageElement)
                             .html("<span class='" + statusClass + "'>" + message + "</span>");
@@ -454,5 +456,9 @@ Verimail.prototype.verify = function(email, onStatusUpdate){
         return this.each(function(){
             new Verimail(this, options).init();
         });
+    };
+
+    $.fn.getVerimailStatus = function() {
+        return this.data('verimail-status');
     };
 })(jQuery, window, document);
