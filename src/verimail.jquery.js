@@ -412,7 +412,8 @@ Verimail.prototype.verify = function(email, onStatusUpdate){
         defaults: {
             messageElement: null,
             statusElement: null,
-            prefixName: 'verimail'
+            prefixName: 'verimail',
+            onStatusChange: null
         },
 
         init: function() {
@@ -422,28 +423,63 @@ Verimail.prototype.verify = function(email, onStatusUpdate){
 
             this.$element.keyup(function(e){
                 var email = $(this).val();
-                verimailInstance.verify(email, function(status, message, suggestion){
-                    var statusClass = "error";
-                    var statusElement = config.statusElement ? $(config.statusElement) : outerScope.$element;
 
-                    if(status >= 0){
-                        statusClass = status == Comfirm.AlphaMail.Verimail.Status.Pending ?
-                            "pending" : "success";
-                    }
+                if(outerScope.timeoutId){
+                    clearTimeout(outerScope.timeoutId);
+                }
 
-                    statusElement
-                        .removeClass(config.prefixName + '-success')
-                        .removeClass(config.prefixName + '-error')
-                        .removeClass(config.prefixName + '-pending')
-                        .addClass(config.prefixName + '-' + statusClass);
+                var verifyEmailCallback = function(){
+                    verimailInstance.verify(email, function(status, message, suggestion){
+                        var statusClass = "error";
+                        var statusElement = config.statusElement ? $(config.statusElement) : outerScope.$element;
+                        var isPendingStatus = status == Comfirm.AlphaMail.Verimail.Status.Pending;
 
-                    outerScope.$element.data('verimail-status', statusClass);
+                        if(status >= 0){
+                            statusClass = isPendingStatus ? "pending" : "success";
+                        }
+                        
+                        if(config.onStatusChange){
+                            config.onStatusChange(config, status, message, suggestion);
+                        }
 
-                    if(config.messageElement){
-                        $(config.messageElement)
-                            .html("<span class='" + statusClass + "'>" + message + "</span>");
-                    }
-                });
+                        statusElement
+                            .removeClass(config.prefixName + '-success')
+                            .removeClass(config.prefixName + '-error')
+                            .removeClass(config.prefixName + '-pending')
+                            .addClass(config.prefixName + '-' + statusClass);
+
+                        outerScope.isPendingStatus = isPendingStatus;
+                        outerScope.$element.data('verimail-status', statusClass);
+
+                        if(config.messageElement){
+                            var messageContainer = $("<span>" + message + "</span>")
+                                .addClass(statusClass);
+
+                            if(suggestion){
+                                var suggestionAnchor = $("<a />")
+                                    .attr('href', '#')
+                                    .click(function(){
+                                        email = suggestion;
+                                        outerScope.$element.val(suggestion);
+                                        verifyEmailCallback();
+                                        return false;
+                                    });
+
+                                $("span.suggestion", messageContainer)
+                                    .wrap(suggestionAnchor);
+                            }
+
+                            $(config.messageElement)
+                                .html(messageContainer);
+                        }
+                    });
+                };
+
+                if(outerScope.isPendingStatus){
+                    outerScope.timeoutId = setTimeout(verifyEmailCallback, 500);
+                }else{
+                    verifyEmailCallback();
+                }
             });
 
             return this;
