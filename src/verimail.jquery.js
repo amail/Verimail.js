@@ -400,3 +400,59 @@ Verimail.prototype.verify = function(email, onStatusUpdate){
         onStatusUpdate(status, message, suggestion);
     //}
 };
+
+(function($, window, document, undefined){
+    var Verimail = function(element, options){
+        this.element = element;
+        this.$element = $(element);
+        this.options = options;
+    };
+
+    Verimail.prototype = {
+        defaults: {
+            messageElement: null,
+            statusElement: null,
+            prefixName: 'verimail'
+        },
+
+        init: function() {
+            var outerScope = this;
+            var config = this.config = $.extend({}, this.defaults, this.options);
+            var verimailInstance = this.instance = new Comfirm.AlphaMail.Verimail(this.config);
+
+            this.$element.keyup(function(e){
+                var email = $(this).val();
+                verimailInstance.verify(email, function(status, message, suggestion){
+                    var statusClass = "error";
+                    var statusElement = config.statusElement ? $(config.statusElement) : outerScope.$element;
+
+                    if(status >= 0){
+                        statusClass = status == Comfirm.AlphaMail.Verimail.Status.Pending ?
+                            "pending" : "success";
+                    }
+
+                    statusElement
+                        .removeClass(config.prefixName + '-success')
+                        .removeClass(config.prefixName + '-error')
+                        .removeClass(config.prefixName + '-pending')
+                        .addClass(config.prefixName + '-' + statusClass);
+
+                    if(config.messageElement){
+                        $(config.messageElement)
+                            .html("<span class='" + statusClass + "'>" + message + "</span>");
+                    }
+                });
+            });
+
+            return this;
+        }
+    };
+
+    Verimail.defaults = Verimail.prototype.defaults;
+
+    $.fn.verimail = function(options) {
+        return this.each(function(){
+            new Verimail(this, options).init();
+        });
+    };
+})(jQuery, window, document);

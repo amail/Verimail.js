@@ -619,3 +619,13 @@ ul.the-icons li {
 ul.the-icons li:hover {
 	background:#eee;
 }
+
+input#email-address {
+	height: 1.5em;
+	font-size: 1.5em;
+	width: 350px;
+	text-align: center;
+	line-height: 1.2em;
+	padding-right: 35px;
+	padding-left: 35px;
+}
