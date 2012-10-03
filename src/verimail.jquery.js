@@ -421,6 +421,57 @@ Verimail.prototype.verify = function(email, onStatusUpdate){
             var config = this.config = $.extend({}, this.defaults, this.options);
             var verimailInstance = this.instance = new Comfirm.AlphaMail.Verimail(this.config);
 
+            var verifyEmailCallback = function(email){
+                verimailInstance.verify(email, function(status, message, suggestion){
+                    var statusClass = "error";
+                    var statusElement = config.statusElement ? $(config.statusElement) : outerScope.$element;
+                    var isPendingStatus = status == Comfirm.AlphaMail.Verimail.Status.Pending;
+
+                    if(status >= 0){
+                        statusClass = isPendingStatus ? "pending" : "success";
+                    }
+                    
+                    if(config.onStatusChange){
+                        config.onStatusChange(config, status, message, suggestion);
+                    }
+
+                    statusElement
+                        .removeClass(config.prefixName + '-success')
+                        .removeClass(config.prefixName + '-error')
+                        .removeClass(config.prefixName + '-pending')
+                        .addClass(config.prefixName + '-' + statusClass);
+
+                    outerScope.isPendingStatus = isPendingStatus;
+                    outerScope.$element.data('verimail-status', statusClass);
+
+                    if(config.messageElement){
+                        var messageContainer = $("<span>" + message + "</span>")
+                            .addClass(statusClass);
+
+                        if(suggestion){
+                            var suggestionAnchor = $("<a />")
+                                .attr('href', '#')
+                                .click(function(){
+                                    email = suggestion;
+                                    outerScope.$element.val(suggestion);
+                                    verifyEmailCallback();
+                                    return false;
+                                });
+
+                            $("span.suggestion", messageContainer)
+                                .wrap(suggestionAnchor);
+                        }
+
+                        $(config.messageElement)
+                            .html(messageContainer);
+                    }
+                });
+            };
+
+            if(this.$element.val() && this.$element.val().length > 0){
+                verifyEmailCallback(this.$element.val());
+            }
+
             this.$element.keyup(function(e){
                 var email = $(this).val();
 
@@ -428,57 +479,12 @@ Verimail.prototype.verify = function(email, onStatusUpdate){
                     clearTimeout(outerScope.timeoutId);
                 }
 
-                var verifyEmailCallback = function(){
-                    verimailInstance.verify(email, function(status, message, suggestion){
-                        var statusClass = "error";
-                        var statusElement = config.statusElement ? $(config.statusElement) : outerScope.$element;
-                        var isPendingStatus = status == Comfirm.AlphaMail.Verimail.Status.Pending;
-
-                        if(status >= 0){
-                            statusClass = isPendingStatus ? "pending" : "success";
-                        }
-                        
-                        if(config.onStatusChange){
-                            config.onStatusChange(config, status, message, suggestion);
-                        }
-
-                        statusElement
-                            .removeClass(config.prefixName + '-success')
-                            .removeClass(config.prefixName + '-error')
-                            .removeClass(config.prefixName + '-pending')
-                            .addClass(config.prefixName + '-' + statusClass);
-
-                        outerScope.isPendingStatus = isPendingStatus;
-                        outerScope.$element.data('verimail-status', statusClass);
-
-                        if(config.messageElement){
-                            var messageContainer = $("<span>" + message + "</span>")
-                                .addClass(statusClass);
-
-                            if(suggestion){
-                                var suggestionAnchor = $("<a />")
-                                    .attr('href', '#')
-                                    .click(function(){
-                                        email = suggestion;
-                                        outerScope.$element.val(suggestion);
-                                        verifyEmailCallback();
-                                        return false;
-                                    });
-
-                                $("span.suggestion", messageContainer)
-                                    .wrap(suggestionAnchor);
-                            }
-
-                            $(config.messageElement)
-                                .html(messageContainer);
-                        }
-                    });
-                };
-
                 if(outerScope.isPendingStatus){
-                    outerScope.timeoutId = setTimeout(verifyEmailCallback, 500);
+                    outerScope.timeoutId = setTimeout(function(){
+                        verifyEmailCallback(email);
+                    }, 500);
                 }else{
-                    verifyEmailCallback();
+                    verifyEmailCallback(email);
                 }
             });
 
