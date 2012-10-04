@@ -454,7 +454,7 @@ Verimail.prototype.verify = function(email, onStatusUpdate){
                                 .click(function(){
                                     email = suggestion;
                                     outerScope.$element.val(suggestion);
-                                    verifyEmailCallback();
+                                    verifyEmailCallback(suggestion);
                                     return false;
                                 });
 
