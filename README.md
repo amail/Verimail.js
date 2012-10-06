@@ -41,8 +41,14 @@ E.g. validating 'cool@fabeook.cmo' will result in a typo suggestion:
 		}
 	});
 
+### Who is using it?
 
-Like it? Then maybe you'll like our amazing Transactional Email service.
+Add yourself to the list!
+
+* Comfirm (www.comfirm.se)
+
+### Like it?
+Then maybe you'll like our amazing Transactional Email service.
 
 Try AlphaMail for free at:
 http://www.comfirm.se/
