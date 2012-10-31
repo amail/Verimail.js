@@ -357,27 +357,33 @@ Verimail.prototype.verify = function(email, onStatusUpdate){
             status = Verimail.Status.BlockedError;
             message = this.getLanguageText("domainBlocked", segments.fullDomain);
         }else{
-            if(this.options.enforceTld){
-                if(!segments.tld){
+            if(segments.domain && (segments.domain[0] === "-" || segments.domain[segments.domain.length-1] === "-"))
+                {
                     status = Verimail.Status.InvalidPart;
                     message = this.getLanguageText("invalidFormat");
-                }else if(!(segments.tld in Verimail.IANARegisteredTlds)){
-                    status = Verimail.Status.InvalidPart;
-                    var closestTld = Verimail.getClosestTld(segments.tld, 10, this.options.distanceFunction);
-                    if(closestTld){
-                        var closestDomain = Verimail.getClosestEmailDomain(segments.domain + "." + closestTld, 0.25, this.options.distanceFunction);
-                        if(closestDomain){
-                            suggestion = segments.local + "@" + closestDomain;
-                            message = this.getLanguageText("typo", segments.local + "@" + markAsCorrection(closestDomain));
-                        }else{
-                            suggestion = segments.local + "@" + segments.domain + "." + closestTld;
-                            message = this.getLanguageText("typo", segments.local + "@" + segments.domain + "." + markAsCorrection(closestTld));
+                } else {
+                    if(this.options.enforceTld){
+                        if(!segments.tld){
+                            status = Verimail.Status.InvalidPart;
+                            message = this.getLanguageText("invalidFormat");
+                        }else if(!(segments.tld in Verimail.IANARegisteredTlds)){
+                            status = Verimail.Status.InvalidPart;
+                            var closestTld = Verimail.getClosestTld(segments.tld, 10, this.options.distanceFunction);
+                            if(closestTld){
+                                var closestDomain = Verimail.getClosestEmailDomain(segments.domain + "." + closestTld, 0.25, this.options.distanceFunction);
+                                if(closestDomain){
+                                    suggestion = segments.local + "@" + closestDomain;
+                                    message = this.getLanguageText("typo", segments.local + "@" + markAsCorrection(closestDomain));
+                                }else{
+                                    suggestion = segments.local + "@" + segments.domain + "." + closestTld;
+                                    message = this.getLanguageText("typo", segments.local + "@" + segments.domain + "." + markAsCorrection(closestTld));
+                                }
+                            }else{
+                                message = this.getLanguageText("invalidTld", segments.tld);
+                            }
                         }
-                    }else{
-                        message = this.getLanguageText("invalidTld", segments.tld);
                     }
                 }
-            }
         }
     }
 
@@ -393,6 +399,14 @@ Verimail.prototype.verify = function(email, onStatusUpdate){
         }
     }
 
+
+    if(!onStatusUpdate)
+        {
+            return {
+                status: status,
+                message: message
+            };
+        } else
     //if(this.options.token && status == Verimail.Status.CorrectSyntax){
     //    onStatusUpdate(Verimail.Status.Pending, message, suggestion);
     //    this.Service.verify(email, onStatusUpdate);
