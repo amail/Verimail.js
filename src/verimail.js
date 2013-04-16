@@ -107,7 +107,7 @@ Verimail.Language = {
         invalidFormat: "Ogiltig e-postadress",
         empty: "E-postadressen är tom"
     },
-    zh-tw: {
+    zh_tw: {
         success: "Email 正確",
         typo: "你是指 <span class='sugestion'>%s</span>?",
         invalidTld: "Top Level 的網域 <span class='tld'>%s</span> 不存在",
