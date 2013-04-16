@@ -106,6 +106,14 @@ Verimail.Language = {
         domainBlocked: "Domänen <span class='domain'>%s</span> är inte tillåten",
         invalidFormat: "Ogiltig e-postadress",
         empty: "E-postadressen är tom"
+    },
+    zh-tw: {
+        success: "Email 正確",
+        typo: "你是指 <span class='sugestion'>%s</span>?",
+        invalidTld: "Top Level 的網域 <span class='tld'>%s</span> 不存在",
+        domainBlocked: "網域 <span class='blocked'>%s</span> 不接受",
+        invalidFormat: "Email 的樣式不正確",
+        empty: "Email 不可為空值"
     }
 };
 
