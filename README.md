@@ -45,10 +45,10 @@ E.g. validating 'cool@fabeook.cmo' will result in a typo suggestion:
 
 Add yourself to the list!
 
-* Comfirm (www.comfirm.se)
+* AlphaMail (amail.io)
 
 ### Like it?
 Then maybe you'll like our amazing Transactional Email service.
 
 Try AlphaMail for free at:
-http://www.comfirm.se/
+http://amail.io/
