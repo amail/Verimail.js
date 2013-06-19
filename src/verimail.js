@@ -332,8 +332,10 @@ Verimail.getEmailAddressSegments = function(email){
     return segments;
 };
 
-// Verifies an email and calls a callback function once it's ready
-Verimail.prototype.verify = function(email, onStatusUpdate){
+
+// Verifies an email synchronously and returns an object
+// in the form { status, message, suggestion }
+Verimail.prototype.verifySync = function(email){ 
     email = (email || "").toLowerCase();
     var status = null, message = null, suggestion = null;
 
@@ -392,11 +394,16 @@ Verimail.prototype.verify = function(email, onStatusUpdate){
             message = message || this.getLanguageText("success");
         }
     }
+    return { status: status, message: message, suggestion: suggestion };
+}
 
-    //if(this.options.token && status == Verimail.Status.CorrectSyntax){
+// Verifies an email and calls a callback function once it's ready
+Verimail.prototype.verify = function(email, onStatusUpdate){
+    var r = this.verifySync(email);
+    //if(this.options.token && r.status == Verimail.Status.CorrectSyntax){
     //    onStatusUpdate(Verimail.Status.Pending, message, suggestion);
     //    this.Service.verify(email, onStatusUpdate);
     //}else{
-        onStatusUpdate(status, message, suggestion);
+        onStatusUpdate(r.status, r.message, r.suggestion);
     //}
 };
