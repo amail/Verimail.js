@@ -1,0 +1,11 @@
+{
+  "name": "Verimail.js",
+  "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/chilijung/Verimail.js.git"
+  },
+  "dependencies": {
+    "jquery": "~1.7.1"
+  }
+}
