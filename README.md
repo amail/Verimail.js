@@ -9,6 +9,7 @@ Current support:
     * IANA TLD validation
     * Spelling suggestion for the most common TLDs and email domains
     * Deny temporary email account domains such as mailinator.com
+    * English, Castilian and Persian Translation
 
 E.g. validating 'cool@fabeook.cmo' will result in a typo suggestion:
 
@@ -46,6 +47,7 @@ E.g. validating 'cool@fabeook.cmo' will result in a typo suggestion:
 Add yourself to the list!
 
 * AlphaMail (amail.io)
+* BlueTree  (bluetree.ir)
 
 ### Like it?
 Then maybe you'll like our amazing Transactional Email service.
