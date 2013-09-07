@@ -106,6 +106,15 @@ Verimail.Language = {
         domainBlocked: "Domänen <span class='domain'>%s</span> är inte tillåten",
         invalidFormat: "Ogiltig e-postadress",
         empty: "E-postadressen är tom"
+    },
+    fa: {
+        success: "ایمیل به نظر درست میاد.",
+        typo: "منظورتون <span class='suggestion'>%s</span> نیست؟",
+        invalidTld: "پسوند(TLD) <span class='tld'>%s</span> وجود خارجی ندارد.",
+        domainBlocked: "دامنه <span class='blocked'>%s</span> غیر قابل استفاده است.",
+        invalidFormat: "ایمیل ساختار درستی ندارد.",
+        empty: "ایمیل خالی"
+
     }
 };
 
@@ -123,7 +132,7 @@ Verimail.MostCommonEmailDomains = {
 Verimail.MostCommonTlds = {
     com:null, org:null, edu:null, gov:null, uk:null, net:null,
     ca:null, de:null, jp:null, fr:null, au:null, us:null, ru:null,
-    ch:null, it:null, nl:null, se:null, dk:null, no:null, es:null, mil:null
+    ch:null, ir:null, nl:null, se:null, dk:null, no:null, es:null, mil:null
 };
 
 // Table of all TLDs registered by IANA
@@ -169,7 +178,9 @@ Verimail.TempEmailDomains = {
         rtrtr: null,
         sharklasers: null,
         guerrillamailblock: null,
-        guerrillamail: null
+        guerrillamail: null,
+        temporaryinbox: null,
+        maileater: null
     },
     net: {
         guerrillamail: null,
@@ -188,6 +199,20 @@ Verimail.TempEmailDomains = {
     },
     biz: {
         guerrillamail: null
+    },
+    ir: {
+        emeil: null
+    },
+    'in': {
+        emeil: null
+    },
+    tk: {
+        emeil: null,
+        inbax: null,
+        mailfa: null
+    },
+    us: {
+        spambox: null
     }
 };
 
