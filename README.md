@@ -9,7 +9,7 @@ Current support:
     * IANA TLD validation
     * Spelling suggestion for the most common TLDs and email domains
     * Deny temporary email account domains such as mailinator.com
-    * English, French and Persian Translation
+    * English, Castilian and Persian Translation
 
 E.g. validating 'cool@fabeook.cmo' will result in a typo suggestion:
 
