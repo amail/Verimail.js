@@ -106,6 +106,14 @@ Verimail.Language = {
         domainBlocked: "Domänen <span class='domain'>%s</span> är inte tillåten",
         invalidFormat: "Ogiltig e-postadress",
         empty: "E-postadressen är tom"
+    },
+    de: {
+        success: "Email sieht OK aus.",
+        typo: "Meintest du <span class='suggestion'>%s</span>?",
+        invalidTld: "Top-Level-Domain <span class='tld'>%s</span> existiert nicht.",
+        domainBlocked: "Domäne <span class='domain'>%s</span> ist nicht erlaubt.",
+        invalidFormat: "Email ist nicht richtig formatiert.",
+        empty: "Email ist leer."
     }
 };
 
