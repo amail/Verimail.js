@@ -472,7 +472,7 @@ Verimail.prototype.verify = function(email, onStatusUpdate){
                 verifyEmailCallback(this.$element.val());
             }
 
-            this.$element.keyup(function(e){
+            this.$element.on('input', function(e){
                 var email = $(this).val();
 
                 if(outerScope.timeoutId){
