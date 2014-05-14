@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<!--[if lt IE 7 ]><html class="ie ie6" lang="en"> <![endif]-->
+<!--[if IE 7 ]><html class="ie ie7" lang="en"> <![endif]-->
+<!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!--><html class="not-ie" lang="en"> <!--<![endif]-->
+	<head>
+		<meta charset="utf-8">
+		<title>Verimail.js - Email Verfification using JQuery</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+		<link href="css/style.css" rel="stylesheet">
+		<link href="css/font-awesome/font-awesome.css" rel="stylesheet">
+		<!--[if IE 7]>
+			<link href="css/font-awesome/font-awesome-ie7.css" rel="stylesheet">
+		<![endif]-->
+
+		<!-- Load Open sans from Google Font Directory -->
+		<link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800' rel='stylesheet' type='text/css'>
+
+		<!--[if lt IE 9]>
+			<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+
+		<script src="js/jquery-1.8.2.min.js"></script>
+		<script src="../src/verimail.js"></script>
+
+		<style type="text/css">
+			div#email-container > h1 {
+				margin-bottom: 30px;
+			}
+			
+			input#email-address.verimail-success {
+				background: transparent url('img/icons/success.png') no-repeat center right;
+			}
+			input#email-address.verimail-error {
+				background: transparent url('img/icons/error.png') no-repeat center right;
+			}
+			input#email-address.verimail-pending {
+				background: transparent url('img/icons/pending.gif') no-repeat center right;
+			}
+
+			p#status-message span.success {
+				color: green;
+			}
+			p#status-message span.error {
+				color: red;
+			}
+			p#status-message span.correction {
+				font-weight: bold;
+			}
+		</style>
+
+		<script>
+            $(document).ready(function(){
+
+                $("input#email-address").on('keyup', function() {
+                    var verimail = new Comfirm.AlphaMail.Verimail({
+                        denyTempEmailDomains: true
+                    });
+                    
+                    var r = verimail.verifySync($(this).val());
+                    var statusEl = $("p#status-message");
+                    var all = [r.status, r.message, r.suggestion];
+                    statusEl.html(all.join("<br>"));
+                }); 
+                    
+			});
+		</script>
+	</head>
+	<body>
+		<div id="content" class="container">
+			<div class="hero-unit">
+				<div id="email-container">
+					<h1 class="ac">Verimail.js</h1>
+					<p class="ac">
+						<input id="email-address" type="text" placeholder="Enter an email address" />
+					</p>
+					<p class="ac" id="status-message"></p>
+				</div>
+			</div>
+		</div>
+
+		<script type="text/javascript" src="js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="js/jquery.isotope.min.js"></script>
+		<script type="text/javascript" src="js/functions.min.js"></script>
+	</body>
+</html>
