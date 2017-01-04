@@ -106,6 +106,14 @@ Verimail.Language = {
         domainBlocked: "Domänen <span class='domain'>%s</span> är inte tillåten",
         invalidFormat: "Ogiltig e-postadress",
         empty: "E-postadressen är tom"
+    },
+    pt_BR:{
+        success: "O email está OK",
+        typo: "Você quis dizer <span class='suggestion'>%s</span>?",
+        invalidTld: "O domínio <span class='tld'>%s</span> não existe",
+        domainBlocked: "O domínio <span class='domain'>%s</span> não é permitido",
+        invalidFormat: "E email não está corretamente formatado",
+        empty: "O campo de email está vazio"
     }
 };
 
