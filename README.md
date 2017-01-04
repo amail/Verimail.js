@@ -17,9 +17,11 @@ E.g. validating 'cool@fabeook.cmo' will result in a typo suggestion:
 ### jQuery Example (verimail.jquery.js)
 
 	$("input#email-address").verimail({
-		messageElement: "p#status-message"
+		messageElement: "p#status-message",
+		language: "pt_BR" //first, be sure that the language exists; for English (en), just comment out this line
 	});
 
+	
 ### Example (verimail.js)
 
 	var email = "cool@fabeook.cmo";
